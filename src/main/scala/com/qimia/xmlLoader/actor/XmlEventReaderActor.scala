@@ -1,21 +1,26 @@
 package com.qimia.xmlLoader.actor
 
-import akka.actor.{Actor, ActorLogging, Props}
+import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.routing.RoundRobinPool
 import com.qimia.xmlLoader.model.{Post, PostsBatchMsg}
-import com.qimia.xmlLoader.util.Arguments
+import com.qimia.xmlLoader.util.Config
+import XmlEventReaderActor._
 
 import scala.io.Source
 import scala.xml.pull._
 
-class XmlEventReaderActor extends Actor with ActorLogging {
-  import XmlEventReaderActor._
+class XmlEventReaderActor(config: Config) extends Actor with ActorLogging {
+
+  val saveBatchCsvActor = context.actorOf(RoundRobinPool(config.numberOfSaveActors).props(Props(new SaveBatchCsvActor(config))), name = saveActorName)
+
 
   def receive = {
-    case fileName: String => {
-      val saveBatchCsvActor = context.actorOf(RoundRobinPool(Arguments.numberOfSaveActors).props(Props(new SaveBatchCsvActor)), name = saveActorName)
-      val xml = new XMLEventReader(Source.fromFile(fileName))
-      var postsBatchMsg= new PostsBatchMsg
+    case (fileName: String, fileIndex: Int) => {
+      println(fileIndex)
+      val xmlBuffer = Source.fromFile(fileName)
+      xmlBuffer.next()
+      val xml = new XMLEventReader(xmlBuffer)
+      var postsBatchMsg = new PostsBatchMsg
       while (xml.hasNext) {
         val next = xml.next()
         next match {
@@ -27,22 +32,26 @@ class XmlEventReaderActor extends Actor with ActorLogging {
                 getAttributeValue(next, ATTR_TAGS))
 
               postsBatchMsg.addPost(post)
-              if (postsBatchMsg.posts.size == Arguments.batchSize) {
+              if (postsBatchMsg.posts.size == config.batchSize) {
                 saveBatchCsvActor ! PostsBatch(postsBatchMsg)
+                totalSentRows += postsBatchMsg.posts.size
                 totalSentBatches += 1
-                log.info("Batch " + totalSentBatches)
+                log.info(s"${postsBatchMsg.posts.size} rows in ${totalSentBatches}th batch, file index: $fileIndex, total $totalSentRows rows sent")
                 postsBatchMsg = new PostsBatchMsg
               }
             }
           }
-          case _ => // ignore
+          case _ =>
         }
       }
+
+
       // Last batch (less than maximum size)
-      if (!postsBatchMsg.posts.isEmpty) {
+      if (postsBatchMsg.posts.nonEmpty) {
         saveBatchCsvActor ! PostsBatch(postsBatchMsg)
+        totalSentRows += postsBatchMsg.posts.size
         totalSentBatches += 1
-        log.info("Batch " + totalSentBatches)
+        log.info(s"Finished index $fileIndex, batch " + totalSentBatches + s" total $totalSentRows rows sent.")
       }
     }
     case DoneMsg => {
@@ -67,10 +76,12 @@ object XmlEventReaderActor {
 
   var totalSentBatches = 0
   var totalReceivedBatches = 0
+  var totalSentRows = 0
+
 
   def isQuestion(event: XMLEvent): Boolean = {
     event.asInstanceOf[EvElemStart].attrs.get(ATTR_POST_TYPE_ID) match {
-      case Some(res) => return "1".equals(res.text)
+      case Some(res) => "1".equals(res.text)
     }
   }
 

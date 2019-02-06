@@ -2,12 +2,18 @@ package com.qimia.xmlLoader.util
 
 import java.io.File
 
+/**
+  * Returns the files in a circular manner
+  * 0 1 2 3 4 5 0 1 2 3 4 5 0 1 2...
+  */
 object FileLoadBalance {
 
-  val numberOfOutputFiles = Arguments.numberOfOutputFiles
-
-  def getOutputFile(): File = {
-    val rnd = new scala.util.Random
-    return new File(Arguments.outputPath + "result" + rnd.nextInt(numberOfOutputFiles) + ".csv")
+  var config:Config = _
+  var circular:Iterator[Int] = _
+  def init(config: Config) = {
+    this.config = config
+    circular = Iterator.continually((0 until config.numberOfOutputFiles).toList).flatten
   }
+
+  def nextOutputFile: File = new File(config.outputPath + "/result" + circular.next + ".csv")
 }
