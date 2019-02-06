@@ -2,15 +2,17 @@ import java.io.File
 
 import com.qimia.xmlLoader.actor.SaveBatchCsvActor
 import com.qimia.xmlLoader.model.Post
-import com.qimia.xmlLoader.util.{Arguments, StopWordsBloomFilter}
+import com.qimia.xmlLoader.util.{ Config, StopWordsBloomFilter}
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
 class PostNormalizationTest extends FunSuite with BeforeAndAfter {
   var post:Post =_
 
+  var config = Config()
+
   before {
     initArguments
-    StopWordsBloomFilter.init(Arguments.stopWordsPath)
+    StopWordsBloomFilter.init(config.stopWordsPath)
     fillTestData
   }
 
@@ -38,7 +40,8 @@ class PostNormalizationTest extends FunSuite with BeforeAndAfter {
     val dir = new File(rootResources + "output");
     if (!dir.exists())
       dir.mkdir();
-    Arguments.outputPath = getClass.getResource("/output").getPath
-    Arguments.stopWordsPath = getClass.getResource("stopwords.txt").getPath
+    config = config.copy(
+      outputPath = getClass.getResource("output/").getPath,
+      stopWordsPath = getClass.getResource("stopwords.txt").getPath)
   }
 }

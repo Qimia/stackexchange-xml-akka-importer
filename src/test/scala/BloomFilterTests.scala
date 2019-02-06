@@ -2,13 +2,15 @@ import java.io.File
 
 import com.google.common.base.Charsets
 import com.google.common.hash.{BloomFilter, Funnels}
-import com.qimia.xmlLoader.util.Arguments
+import com.qimia.xmlLoader.util.Config
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
 class BloomFilterTests extends FunSuite with BeforeAndAfter {
   var bf: BloomFilter[String] = _
   var stopWords: List[String] = _
   var otherWords: List[String] = _
+
+  var config = Config()
 
   before {
     initArguments
@@ -50,7 +52,8 @@ class BloomFilterTests extends FunSuite with BeforeAndAfter {
     val dir = new File(rootResources + "output");
     if (!dir.exists())
       dir.mkdir();
-    Arguments.outputPath = getClass.getResource("/output").getPath
-    Arguments.stopWordsPath = getClass.getResource("stopwords.txt").getPath
+    config = config.copy(
+      outputPath = getClass.getResource("output/").getPath,
+      stopWordsPath = getClass.getResource("stopwords.txt").getPath)
   }
 }
