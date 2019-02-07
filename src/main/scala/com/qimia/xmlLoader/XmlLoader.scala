@@ -7,6 +7,8 @@ import com.qimia.xmlLoader.actor.{SaveBatchCsvActor, XmlEventReaderActor}
 import com.qimia.xmlLoader.util.{ArgumentParser, Config, FileLoadBalance, StopWordsBloomFilter}
 import akka.routing.RoundRobinPool
 import com.qimia.xmlLoader.actor.XmlEventReaderActor.saveActorName
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
 object XmlLoader {
   def main(args: Array[String]): Unit = {
@@ -14,17 +16,17 @@ object XmlLoader {
     run(config)
   }
 
-  def run(config:Config)={
+  def run(config:Config, waitTermination:Boolean=false)={
     StopWordsBloomFilter.init(config.stopWordsPath)
     FileLoadBalance.init(config)
     val system = ActorSystem("MySystem")
     val readXmlActor = system.actorOf(RoundRobinPool(config.numberOfReadActors).props(Props(new XmlEventReaderActor(config))), name = "readXmlActor")
     val xmlFileList = recursiveListFiles(new File(config.inputPath))
-      .filter(x => x.isFile && x.getAbsolutePath.endsWith("Posts.xml"))
+      .filter(x => x.isFile && x.getAbsolutePath.endsWith("Posts.xml"))//TODO possibiliyty of comments
       .map(_.getAbsolutePath)
       .zipWithIndex
     xmlFileList.foreach(readXmlActor ! _)
-
+    if(waitTermination) Await.ready(system.whenTerminated, Duration.Inf)
   }
 
 

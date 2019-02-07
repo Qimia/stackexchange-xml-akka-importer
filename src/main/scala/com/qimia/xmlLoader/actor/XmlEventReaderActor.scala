@@ -16,10 +16,11 @@ class XmlEventReaderActor(config: Config) extends Actor with ActorLogging {
 
   def receive = {
     case (fileName: String, fileIndex: Int) => {
+      println(fileName)
       println(fileIndex)
       val xmlBuffer = Source.fromFile(fileName)
       xmlBuffer.next()
-      val xml = new XMLEventReader(xmlBuffer)
+      val xml = new XMLEventReader(xmlBuffer)//TODO replace with SAX or StAX parser
       var postsBatchMsg = new PostsBatchMsg
       while (xml.hasNext) {
         val next = xml.next()

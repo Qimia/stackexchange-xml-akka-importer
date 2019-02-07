@@ -24,12 +24,8 @@ class ActorSystemTests extends TestKit(ActorSystem("MySpec")) with ImplicitSende
     posts.addPost(new Post("1", "title", "body", "tags"))
   }
 
-  "Output " must {"have 1828 rows" in{
-    /**
-      * This works on the 3dprinting stackoverflow
-      */
-    com.qimia.xmlLoader.XmlLoader.run(config)
-    Thread.sleep(10000)
+  "Output of 3dprinting.stackexchange.com" must {"have 1828 rows" in{
+    com.qimia.xmlLoader.XmlLoader.run(config, true)
     val numRows = new File(config.outputPath).listFiles
         .map(io.Source.fromFile(_).getLines.size)
       .sum

@@ -27,10 +27,9 @@ Dependencies
  
 Notes
 -----
-XMLEventReader is not able to read xml encoded with BOM, you need to remove BOM with below command:
 
-    awk '{if(NR==1)sub(/^\xef\xbb\xbf/,"");print}' input_withbom.xml > input.xml
-
+The output CSVs have the format = id|title|body|tags
+id, body and tags are each a comma-separated list.
 
 process
 -------
