@@ -32,7 +32,8 @@ class PostNormalizationTest extends FunSuite with BeforeAndAfter {
       "I want to use a track-bar to change a form's opacity.</p><p>This is my code:</p><pre><code>decimal trans = trackBar1.Value / 5000;" +
       "this.Opacity = trans;</code></pre><p>When I try to build it, I get this error:</p><blockquote><p>Cannot implicitly convert type 'decimal' to 'double'.</p></blockquote> " +
       "<p>I tried making <code>trans</code> a <code>double</code>, but then the control doesn't work. This code has worked fine for me in VB.NET in the past.",
-      "<c#><winforms><type-conversion><decimal><opacity>")
+      "<c#><winforms><type-conversion><decimal><opacity>",
+      "test.stackexchange.com")
   }
 
   def initArguments: Unit ={

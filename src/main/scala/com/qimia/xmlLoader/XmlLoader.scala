@@ -16,17 +16,19 @@ object XmlLoader {
     run(config)
   }
 
-  def run(config:Config, waitTermination:Boolean=false)={
+  def run(config:Config)={
     StopWordsBloomFilter.init(config.stopWordsPath)
     FileLoadBalance.init(config)
     val system = ActorSystem("MySystem")
     val readXmlActor = system.actorOf(RoundRobinPool(config.numberOfReadActors).props(Props(new XmlEventReaderActor(config))), name = "readXmlActor")
     val xmlFileList = recursiveListFiles(new File(config.inputPath))
       .filter(x => x.isFile && x.getAbsolutePath.endsWith("Posts.xml"))//TODO possibiliyty of comments
+      .sorted(Ordering.fromLessThan((file: File, file1: File) => file.length()<file1.length()))
       .map(_.getAbsolutePath)
       .zipWithIndex
     xmlFileList.foreach(readXmlActor ! _)
-    if(waitTermination) Await.ready(system.whenTerminated, Duration.Inf)
+    Await.ready(system.whenTerminated, Duration.Inf)
+    SaveBatchCsvActor.writeTags(config)
   }
 
 

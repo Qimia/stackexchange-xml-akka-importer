@@ -21,11 +21,11 @@ class ActorSystemTests extends TestKit(ActorSystem("MySpec")) with ImplicitSende
     FileLoadBalance.init(config)
     StopWordsBloomFilter.init(config.stopWordsPath)
     posts = new PostsBatchMsg
-    posts.addPost(new Post("1", "title", "body", "tags"))
+    posts.addPost(new Post("1", "title", "body", "tags","test.stackexchange.com"))
   }
 
   "Output of 3dprinting.stackexchange.com" must {"have 1828 rows" in{
-    com.qimia.xmlLoader.XmlLoader.run(config, true)
+    com.qimia.xmlLoader.XmlLoader.run(config)
     val numRows = new File(config.outputPath).listFiles
         .map(io.Source.fromFile(_).getLines.size)
       .sum

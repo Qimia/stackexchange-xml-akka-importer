@@ -12,10 +12,10 @@ case class Config(
                    inputPath:String="",
                    outputPath:String="",
                    stopWordsPath:String="",
-                   numberOfSaveActors:Int=1,
+                   numberOfSaveActors:Int=3,
                    numberOfReadActors:Int=4,
-                   numberOfOutputFiles:Int=32,
-                   batchSize:Int = 300,
+                   numberOfOutputFiles:Int=1,
+                   batchSize:Int = 800,
                    columnSeparator:Char=',',
                    rowSeparator:Char='\n'
                  )
@@ -49,34 +49,34 @@ object ArgumentParser{
           )
           .text("The output directory to save CSVs in. If it does not exist, the program will attempt to create it. If exists, all the files in it will be deleted."),
 
-        opt[Int]('s', "numsaveactors")
+        opt[Int]('s', "numSaveActors")
           .action((x, s) => s.copy(numberOfSaveActors = x))
-          .validate(>(_, "numsaveactors"))
+          .validate(>(_, "numSaveActors"))
           .text("The number of save actors"),
 
-        opt[Int]('n', "numoutfiles")
+        opt[Int]('f', "numOutFiles")
           .action((x, n) => n.copy(numberOfOutputFiles = x))
-          .validate(>(_, "numoutfiles"))
-          .text("The number of save actors"),
+          .validate(>(_, "numOutFiles"))
+          .text("The number of output files"),
 
-        opt[Int]('b', "batchsize")
+        opt[Int]('b', "batchSize")
           .action((x, b) => b.copy(batchSize = x))
-          .validate(>(_, "batchsize"))
+          .validate(>(_, "batchSize"))
           .text("The batch size"),
 
-        opt[Int]('t', "writerthreadcount")
+        opt[Int]('w', "numWritePerFile")
           .action((x, b) => b.copy(numberOfSaveActors = x))
-          .validate(>(_, "writerthreadcount"))
-          .text("The number of save actors"),
+          .validate(>(_, "numWritePerFile"))
+          .text("The number of save actors per file"),
 
-        opt[Int](name = "readthreadcount")
+        opt[Int](name = "numRead")
           .action((x, b) => b.copy(numberOfReadActors = x))
-          .validate(>(_, "readthreadcount"))
+          .validate(>(_, "numRead"))
           .text("The number of read actors"),
 
         opt[Char]('c', "colsep")
           .action((x, c) => c.copy(columnSeparator = x))
-          .validate(>(_, "columnseparator"))
+          .validate(>(_, "colsep"))
           .text("The column separator for CSVs."),
 
         opt[Char]('r', "rowsep")

@@ -1,5 +1,7 @@
 package com.qimia.xmlLoader.actor
 
+import java.io.File
+
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.routing.RoundRobinPool
 import com.qimia.xmlLoader.model.{Post, PostsBatchMsg}
@@ -16,8 +18,7 @@ class XmlEventReaderActor(config: Config) extends Actor with ActorLogging {
 
   def receive = {
     case (fileName: String, fileIndex: Int) => {
-      println(fileName)
-      println(fileIndex)
+      val dirName = new File(fileName).getParentFile.getName
       val xmlBuffer = Source.fromFile(fileName)
       xmlBuffer.next()
       val xml = new XMLEventReader(xmlBuffer)//TODO replace with SAX or StAX parser
@@ -30,7 +31,8 @@ class XmlEventReaderActor(config: Config) extends Actor with ActorLogging {
               val post = new Post(getAttributeValue(next, ATTR_POST_ID),
                 getAttributeValue(next, ATTR_TITLE),
                 getAttributeValue(next, ATTR_BODY),
-                getAttributeValue(next, ATTR_TAGS))
+                getAttributeValue(next, ATTR_TAGS),
+                dirName)
 
               postsBatchMsg.addPost(post)
               if (postsBatchMsg.posts.size == config.batchSize) {
