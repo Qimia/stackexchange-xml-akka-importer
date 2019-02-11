@@ -15,4 +15,5 @@ libraryDependencies += "com.typesafe.akka" %% "akka-testkit" % "2.4.16" % "test"
 libraryDependencies += "com.github.scopt" %% "scopt" % "4.0.0-RC2"
 // https://mvnrepository.com/artifact/org.apache.commons/commons-text
 libraryDependencies += "org.apache.commons" % "commons-text" % "1.6"
-
+// https://mvnrepository.com/artifact/org.jsoup/jsoup
+libraryDependencies += "org.jsoup" % "jsoup" % "1.8.3"

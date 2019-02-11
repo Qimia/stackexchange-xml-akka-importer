@@ -7,6 +7,7 @@ import akka.routing.RoundRobinPool
 import com.qimia.xmlLoader.model.{Post, PostsBatchMsg}
 import com.qimia.xmlLoader.util.Config
 import XmlEventReaderActor._
+import org.jsoup.Jsoup
 
 import scala.io.Source
 import scala.xml.pull._
@@ -21,16 +22,17 @@ class XmlEventReaderActor(config: Config) extends Actor with ActorLogging {
       val dirName = new File(fileName).getParentFile.getName
       val xmlBuffer = Source.fromFile(fileName)
       xmlBuffer.next()
-      val xml = new XMLEventReader(xmlBuffer)//TODO replace with SAX or StAX parser
+      val xml = new XMLEventReader(xmlBuffer)
       var postsBatchMsg = new PostsBatchMsg
       while (xml.hasNext) {
         val next = xml.next()
         next match {
           case EvElemStart(_, ROW_ELEMENT, _, _) => {
             if (isQuestion(next)) {
+              next.asInstanceOf[EvElemStart]
               val post = new Post(getAttributeValue(next, ATTR_POST_ID),
-                getAttributeValue(next, ATTR_TITLE),
-                getAttributeValue(next, ATTR_BODY),
+                Jsoup.parse(getAttributeValue(next, ATTR_TITLE)).text(),
+                Jsoup.parse(getAttributeValue(next, ATTR_BODY)).text(),
                 getAttributeValue(next, ATTR_TAGS),
                 dirName)
 
@@ -65,7 +67,7 @@ class XmlEventReaderActor(config: Config) extends Actor with ActorLogging {
       }
     }
   }
-}
+} //32 saniyede 143200
 
 object XmlEventReaderActor {
   val ROW_ELEMENT = "row"
