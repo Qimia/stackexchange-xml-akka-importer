@@ -28,9 +28,8 @@ class SaveBatchCsvActor(config:Config) extends Actor with ActorLogging {
 
         /**
           * Create the necessary tags
-          * If the tag is not seen before, it is created with then next ID, incremental from 1
-          */
-        tagsOfPost.foreach(
+          * If the tag is not seen before, it is created with the next ID, incremental from 1
+          */        tagsOfPost.foreach(
           tag => {
             val tagID:Int = tagIdPairs getOrElse (tag, tagIdPairs.size)
             tagIdPairs(tag) = tagID
@@ -43,9 +42,10 @@ class SaveBatchCsvActor(config:Config) extends Actor with ActorLogging {
           * first file contains the row ID, title and body
           * second file contains the same row ID and list of IDs of the tags
           */
-        bodyTitleWriter.writeRow(List(rowID, post.title, post.body, post.forumDomain))
-        tagRelationWriter.writeRow(List(rowID, tagsOfPost.map(tagIdPairs(_)).mkString(",")))
-        rowID+=1
+
+        val newRowID = getRowID
+        bodyTitleWriter.writeRow(List(newRowID, post.title, post.body, post.forumDomain))
+        tagRelationWriter.writeRow(List(newRowID, tagsOfPost.map(tagIdPairs(_)).mkString(",")))
       }
       bodyTitleWriter.close()
       tagRelationWriter.close()
@@ -61,19 +61,29 @@ class SaveBatchCsvActor(config:Config) extends Actor with ActorLogging {
 
 object SaveBatchCsvActor {
 
+  /**
+    * We must use thread safe map and variables as these are global objects modified by multiple threads.
+    */
   val tagIdPairs: scala.collection.concurrent.Map[String,Int] = scala.collection.concurrent.TrieMap[String,Int]()
   @volatile var writtenRows:Int=0
   @volatile var writtenBatches:Int=0
-  @volatile var rowID=0
+  @volatile private var rowID:Long = -1
+
+  def getRowID=synchronized{
+    rowID+=1
+    rowID
+  }
+
   def normalize(post: Post): Unit ={
-    post.title = post.title//.toLowerCase
+    post.title = post.title
+    //.toLowerCase
 //      .replaceAll("[\\p{Punct}||\\p{Cntrl}&&[^.'-]]"," ")
 //      .replaceAll(" +",",")
 //      .split(",")
 ////      .filter(x => (!StopWordsBloomFilter.contains(x) && !x.matches("[0-9\\p{Punct}]*")))
 ////      .map(x => x.replaceAll("^[.']+|[.']+$",""))
 //      .mkString(",")
-    post.body = StringEscapeUtils.unescapeHtml4(post.body)
+    post.body = post.body
       //.replaceAll("\\$.*?\\$","dollarsignremoved")
 //       .replaceAll("\\<.*?>","")
 //        .replace("\\begin\\{.*?\\}(.+?)\\end\\{.*?\\}", "")
@@ -88,7 +98,7 @@ object SaveBatchCsvActor {
   }
 
 
-  def writeTags(config:Config) = {
+  def writeTags(config:Config):Unit = {
     implicit object MyFormat extends DefaultCSVFormat {
       override val delimiter = '|'
     }

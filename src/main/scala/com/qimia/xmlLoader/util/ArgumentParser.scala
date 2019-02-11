@@ -12,9 +12,9 @@ case class Config(
                    inputPath:String="",
                    outputPath:String="",
                    stopWordsPath:String="",
-                   numberOfSaveActors:Int=3,
-                   numberOfReadActors:Int=4,
-                   numberOfOutputFiles:Int=16,
+                   numberOfSaveActors:Int=4,
+                   numberOfReadActors:Int=2,
+                   numberOfOutputFiles:Int=1,
                    batchSize:Int = 800,
                    columnSeparator:Char=',',
                    rowSeparator:Char='\n'

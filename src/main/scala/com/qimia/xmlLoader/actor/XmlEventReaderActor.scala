@@ -7,6 +7,7 @@ import akka.routing.RoundRobinPool
 import com.qimia.xmlLoader.model.{Post, PostsBatchMsg}
 import com.qimia.xmlLoader.util.Config
 import XmlEventReaderActor._
+import org.apache.commons.text.StringEscapeUtils
 import org.jsoup.Jsoup
 
 import scala.io.Source
@@ -15,7 +16,6 @@ import scala.xml.pull._
 class XmlEventReaderActor(config: Config) extends Actor with ActorLogging {
 
   val saveBatchCsvActor = context.actorOf(RoundRobinPool(config.numberOfSaveActors).props(Props(new SaveBatchCsvActor(config))), name = saveActorName)
-
 
   def receive = {
     case (fileName: String, fileIndex: Int) => {
@@ -31,9 +31,13 @@ class XmlEventReaderActor(config: Config) extends Actor with ActorLogging {
             if (isQuestion(next)) {
               next.asInstanceOf[EvElemStart]
               val post = new Post(getAttributeValue(next, ATTR_POST_ID),
-                Jsoup.parse(getAttributeValue(next, ATTR_TITLE)).text(),
-                Jsoup.parse(getAttributeValue(next, ATTR_BODY)).text(),
+
+                removeCodeBlocks(getAttributeValue(next, ATTR_TITLE)),
+
+                Jsoup.parse(removeCodeBlocks(getAttributeValue(next, ATTR_BODY))).text(),
+
                 getAttributeValue(next, ATTR_TAGS),
+
                 dirName)
 
               postsBatchMsg.addPost(post)
@@ -67,7 +71,7 @@ class XmlEventReaderActor(config: Config) extends Actor with ActorLogging {
       }
     }
   }
-} //32 saniyede 143200
+}
 
 object XmlEventReaderActor {
   val ROW_ELEMENT = "row"
@@ -96,4 +100,14 @@ object XmlEventReaderActor {
       case None => " "
     }
   }
+
+  /**
+    * Warning!!! Unescapes the HTML tags if any
+    * @param str
+    * @return
+    */
+  def removeCodeBlocks(str:String)=
+    StringEscapeUtils.unescapeHtml4(str)
+      .replaceAll("\n", " ")
+      .replaceAll("\\<code\\>.*?\\<\\/code\\>", " ")
 }
