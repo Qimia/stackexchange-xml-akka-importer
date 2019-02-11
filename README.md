@@ -14,7 +14,7 @@ Steps
    * Remove stop words using `BloomFilter` index
    * Remove HTML tags
    * Remove numbers
- * Select random file within range to save the output as CSV for load-balancing
+ * Cyclic file selection for load-balancing of multiple CSV outputs.
  * Send acknowledge from the process-actor to the read-actor
 
 Dependencies
@@ -24,12 +24,19 @@ Dependencies
 * [Scala CSV](https://github.com/tototoshi/scala-csv) CSV Reader/Writer for Scala
 * [TestKit](http://doc.akka.io/api/akka/2.0/akka/testkit/TestKit.html) Akka test library
 * [ScalaTest](http://www.scalatest.org) Scala test library
+* [Apache Commons Lang] (https://commons.apache.org/proper/commons-text/) Used for escaping HTML chars.
+* [JSoup] (https://jsoup.org/) Used for parsing the HTML text of post body and title.
  
 Notes
 -----
 
-The output CSVs have the format = id|title|body|tags
-id, body and tags are each a comma-separated list.
+ * Whole data is separated into multiple files (e.g. 32) with no particular order. Each row of Xml is placed in one of these files.
+ * Columns are separated by '|'
+ * Each row of:
+   * postTags{i}.csv contains the row unique id and the list of tags for that question.
+   * postText{i}.csv contains the same row unique id, title, body, domain
+ * Each row of tagIDs contain the generated id number for each unique label.
+   * Tag ID points to tag IDs in the postTags*.csv and postText*.csv files
 
 process
 -------
