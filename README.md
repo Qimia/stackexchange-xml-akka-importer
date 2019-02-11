@@ -24,8 +24,8 @@ Dependencies
 * [Scala CSV](https://github.com/tototoshi/scala-csv) CSV Reader/Writer for Scala
 * [TestKit](http://doc.akka.io/api/akka/2.0/akka/testkit/TestKit.html) Akka test library
 * [ScalaTest](http://www.scalatest.org) Scala test library
-* [Apache Commons Lang] (https://commons.apache.org/proper/commons-text/) Used for escaping HTML chars.
-* [JSoup] (https://jsoup.org/) Used for parsing the HTML text of post body and title.
+* [Apache Commons Lang](https://commons.apache.org/proper/commons-text/) Used for escaping HTML chars.
+* [JSoup](https://jsoup.org/) Used for parsing the HTML text of post body and title.
  
 Notes
 -----

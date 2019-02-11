@@ -75,9 +75,9 @@ object SaveBatchCsvActor {
 //      .mkString(",")
     post.body = StringEscapeUtils.unescapeHtml4(post.body)
       //.replaceAll("\\$.*?\\$","dollarsignremoved")
-       .replaceAll("\\<.*?>","")
+//       .replaceAll("\\<.*?>","")
 //        .replace("\\begin\\{.*?\\}(.+?)\\end\\{.*?\\}", "")
-      .replace("\n", " ")//.toLowerCase
+//      .replace("\n", " ")//.toLowerCase
       //.replaceAll("[\\p{Punct}||\\p{Cntrl}&&[^.'-]]"," ")
       //.replaceAll(" +",",")
       //.split(",")
