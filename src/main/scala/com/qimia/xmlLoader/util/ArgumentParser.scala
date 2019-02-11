@@ -14,7 +14,7 @@ case class Config(
                    stopWordsPath:String="",
                    numberOfSaveActors:Int=3,
                    numberOfReadActors:Int=4,
-                   numberOfOutputFiles:Int=32,
+                   numberOfOutputFiles:Int=16,
                    batchSize:Int = 800,
                    columnSeparator:Char=',',
                    rowSeparator:Char='\n'
