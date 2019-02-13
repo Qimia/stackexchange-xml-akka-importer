@@ -1,8 +1,8 @@
 package com.qimia.xmlLoader.util
 
-import java.io.File
-import java.nio.file.Files
+import java.io.{File, FileInputStream}
 
+import play.api.libs.json.{JsObject, Json}
 import scopt.OParser
 
 /**
@@ -14,13 +14,29 @@ case class Config(
                    stopWordsPath:String="",
                    numberOfSaveActors:Int=4,
                    numberOfReadActors:Int=2,
-                   numberOfOutputFiles:Int=1,
+                   numberOfOutputFiles:Int=32,
                    batchSize:Int = 800,
                    columnSeparator:Char=',',
                    rowSeparator:Char='\n'
                  )
 
 object ArgumentParser{
+
+  def parse(args:Array[String]):Config={
+
+    if(new File("app.conf").exists()){
+      return parseConfigFile()
+    }
+    parseArguments(args)
+  }
+
+  def parseConfigFile()={
+    val stream = new FileInputStream("app.conf")
+    val json = try {  Json.parse(stream) } finally { stream.close() }
+    var args:List[String] = Nil
+    json.asInstanceOf[JsObject].fieldSet.foreach(a=>args=(List("--"+a._1, a._2.toString())++args))
+    parseArguments(args.toArray)
+  }
 
   def parseArguments(args:Array[String]):Config= {
     val builder = OParser.builder[Config]
@@ -36,7 +52,7 @@ object ArgumentParser{
           .validate(x=> if (new File(x).exists()) success else failure("The input directory does not exist"))
           .action((x, c) => c.copy(inputPath = x))
           .text("The input directory containing the XML files. All XML files in this directory will be parsed."),
-        opt[String]('o', "out")
+        opt[String]('o', "output")
           .required()
           .action((x, c) => {
             val fl = new File(x)
@@ -83,7 +99,7 @@ object ArgumentParser{
           .action((x, r) => r.copy(rowSeparator = x))
           .text("The row separator for CSVs"),
 
-        help("help").text("prints this usage text")
+        help("help").text("Either these parameters can be given or the app.conf can be put into the working directory of the application. template.conf can be used as a template.")
       )
     }
 

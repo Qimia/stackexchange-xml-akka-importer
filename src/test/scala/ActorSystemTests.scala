@@ -27,6 +27,7 @@ class ActorSystemTests extends TestKit(ActorSystem("MySpec")) with ImplicitSende
   "Output of 3dprinting.stackexchange.com" must {"have 1828 rows" in{
     com.qimia.xmlLoader.XmlLoader.run(config)
     val numRows = new File(config.outputPath).listFiles
+      .filter(_.getName.matches("postText.*?.csv"))
         .map(io.Source.fromFile(_).getLines.size)
       .sum
     numRows shouldBe 1828
@@ -66,19 +67,6 @@ class ActorSystemTests extends TestKit(ActorSystem("MySpec")) with ImplicitSende
     }
   }
 
-  "Save Actor Test" must {
-    "validate final result" in {
-      val actorRef = TestActorRef(Props(new SaveBatchCsvActor(config)))
-
-      actorRef ! PostsBatch(posts)
-      expectMsg(DoneMsg)
-
-      val files = getListOfFiles(config.outputPath)
-      val csvOutput:String = io.Source.fromFile(files.head).mkString.replace("\n", "").replace("\r", "")
-      assert(csvOutput.equals("1|title|body|tags"))
-      cleanOutput
-    }
-  }
 
 
   override def afterAll {

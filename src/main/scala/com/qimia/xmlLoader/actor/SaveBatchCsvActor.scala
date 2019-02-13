@@ -4,7 +4,6 @@ import akka.actor.{Actor, ActorLogging}
 import com.github.tototoshi.csv.{CSVWriter, DefaultCSVFormat}
 import com.qimia.xmlLoader.model.{Post, PostsBatchMsg}
 import com.qimia.xmlLoader.util.{Config, FileLoadBalance, StopWordsBloomFilter}
-import org.apache.commons.text.StringEscapeUtils
 
 case class PostsBatch(posts: PostsBatchMsg)
 case class DoneMsg()
@@ -45,7 +44,7 @@ class SaveBatchCsvActor(config:Config) extends Actor with ActorLogging {
 
         val newRowID = getRowID
         bodyTitleWriter.writeRow(List(newRowID, post.title, post.body, post.forumDomain))
-        tagRelationWriter.writeRow(List(newRowID, tagsOfPost.map(tagIdPairs(_)).mkString(",")))
+        tagRelationWriter.writeRow(List(newRowID, tagsOfPost.map(tagIdPairs(_)).mkString(","), post.forumDomain))
       }
       bodyTitleWriter.close()
       tagRelationWriter.close()
@@ -74,26 +73,13 @@ object SaveBatchCsvActor {
     rowID
   }
 
+  /**
+    * A lot of the normalizations are removed. They are done in the Spark code of Overflow-processor.
+    * @param post
+    */
   def normalize(post: Post): Unit ={
     post.title = post.title
-    //.toLowerCase
-//      .replaceAll("[\\p{Punct}||\\p{Cntrl}&&[^.'-]]"," ")
-//      .replaceAll(" +",",")
-//      .split(",")
-////      .filter(x => (!StopWordsBloomFilter.contains(x) && !x.matches("[0-9\\p{Punct}]*")))
-////      .map(x => x.replaceAll("^[.']+|[.']+$",""))
-//      .mkString(",")
     post.body = post.body
-      //.replaceAll("\\$.*?\\$","dollarsignremoved")
-//       .replaceAll("\\<.*?>","")
-//        .replace("\\begin\\{.*?\\}(.+?)\\end\\{.*?\\}", "")
-//      .replace("\n", " ")//.toLowerCase
-      //.replaceAll("[\\p{Punct}||\\p{Cntrl}&&[^.'-]]"," ")
-      //.replaceAll(" +",",")
-      //.split(",")
-//      .filter(x => (!StopWordsBloomFilter.contains(x) && !x.matches("[0-9\\p{Punct}]*")))
-//      .map(x => x.replaceAll("^[.']+|[.']+$",""))
-      //.mkString(",")
     post.tags = post.tags.toLowerCase().replaceAll("><",",").replaceAll("[<>]","")
   }
 

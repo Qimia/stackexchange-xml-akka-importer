@@ -11,7 +11,7 @@ import scala.concurrent.duration.Duration
 
 object XmlLoader {
   def main(args: Array[String]): Unit = {
-    val config = ArgumentParser.parseArguments(args)
+    val config = ArgumentParser.parse(args)
     run(config)
   }
 
