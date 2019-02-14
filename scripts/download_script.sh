@@ -16,8 +16,7 @@ fi
 
 # path of torrent link"
 TORRENT_LINK=https://archive.org/download/stackexchange/stackexchange_archive.torrent
-#script to unzip all file of directory
-BASEDIR=$(dirname $0)
+
 TARGET_DIR = "$dat_dir/torrent_files"
 # Create directory if it does not exist
 mkdir -p "$TARGET_DIR"
