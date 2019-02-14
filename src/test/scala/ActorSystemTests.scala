@@ -6,7 +6,7 @@ import akka.routing.{Broadcast, RoundRobinPool}
 import akka.testkit.{ImplicitSender, TestActorRef, TestKit}
 import com.qimia.xmlLoader.actor.{DoneMsg, PostsBatch, SaveBatchCsvActor}
 import com.qimia.xmlLoader.model.{Post, PostsBatchMsg}
-import com.qimia.xmlLoader.util.{Config, FileLoadBalance, StopWordsBloomFilter}
+import com.qimia.xmlLoader.util.{AppConfig, FileLoadBalance, StopWordsBloomFilter}
 import org.scalatest._
 
 class ActorSystemTests extends TestKit(ActorSystem("MySpec")) with ImplicitSender
@@ -14,7 +14,7 @@ class ActorSystemTests extends TestKit(ActorSystem("MySpec")) with ImplicitSende
 
   var posts: PostsBatchMsg = _
 
-  var config:Config = Config()
+  var config:AppConfig = AppConfig()
 
   override def beforeAll(){
     initArguments

@@ -4,7 +4,7 @@ import java.io.File
 
 import akka.actor.{ActorSystem, Props}
 import com.qimia.xmlLoader.actor.{SaveBatchCsvActor, XmlEventReaderActor}
-import com.qimia.xmlLoader.util.{ArgumentParser, Config, FileLoadBalance, StopWordsBloomFilter}
+import com.qimia.xmlLoader.util.{ArgumentParser, AppConfig, FileLoadBalance, StopWordsBloomFilter}
 import akka.routing.RoundRobinPool
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -15,7 +15,7 @@ object XmlLoader {
     run(config)
   }
 
-  def run(config:Config)={
+  def run(config:AppConfig)={
     StopWordsBloomFilter.init(config.stopWordsPath)
     FileLoadBalance.init(config)
     val system = ActorSystem("MySystem")

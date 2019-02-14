@@ -38,6 +38,12 @@ Notes
  * Each row of tagIDs contain the generated id number for each unique label.
    * Tag ID points to tag IDs in the postTags*.csv and postText*.csv files
 
+Compile & Run
+-------------
+Simply execute the script compile.sh to compile.
+For execution, creating a file called app.conf is suggested for giving the input parameters. 
+An example template can be found in 'template_app.conf'. 
+
 process
 -------
 

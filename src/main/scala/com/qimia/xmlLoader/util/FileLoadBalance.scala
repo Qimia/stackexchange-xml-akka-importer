@@ -8,10 +8,10 @@ import java.io.File
   */
 object FileLoadBalance {
 
-  var config:Config = _
+  var config:AppConfig = _
   var circular:Iterator[Int] = _
 
-  def init(config: Config) = {
+  def init(config: AppConfig) = {
     this.config = config
     circular = Iterator.continually((0 until config.numberOfOutputFiles).toList).flatten
   }

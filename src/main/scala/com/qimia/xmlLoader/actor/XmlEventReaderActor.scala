@@ -5,7 +5,7 @@ import java.io.File
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.routing.RoundRobinPool
 import com.qimia.xmlLoader.model.{Post, PostsBatchMsg}
-import com.qimia.xmlLoader.util.Config
+import com.qimia.xmlLoader.util.AppConfig
 import XmlEventReaderActor._
 import org.apache.commons.text.StringEscapeUtils
 import org.jsoup.Jsoup
@@ -13,7 +13,7 @@ import org.jsoup.Jsoup
 import scala.io.Source
 import scala.xml.pull._
 
-class XmlEventReaderActor(config: Config) extends Actor with ActorLogging {
+class XmlEventReaderActor(config: AppConfig) extends Actor with ActorLogging {
 
   val saveBatchCsvActor = context.actorOf(RoundRobinPool(config.numberOfSaveActors).props(Props(new SaveBatchCsvActor(config))), name = saveActorName)
 

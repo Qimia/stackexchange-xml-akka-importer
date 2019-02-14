@@ -3,12 +3,12 @@ package com.qimia.xmlLoader.actor
 import akka.actor.{Actor, ActorLogging}
 import com.github.tototoshi.csv.{CSVWriter, DefaultCSVFormat}
 import com.qimia.xmlLoader.model.{Post, PostsBatchMsg}
-import com.qimia.xmlLoader.util.{Config, FileLoadBalance, StopWordsBloomFilter}
+import com.qimia.xmlLoader.util.{AppConfig, FileLoadBalance, StopWordsBloomFilter}
 
 case class PostsBatch(posts: PostsBatchMsg)
 case class DoneMsg()
 
-class SaveBatchCsvActor(config:Config) extends Actor with ActorLogging {
+class SaveBatchCsvActor(config:AppConfig) extends Actor with ActorLogging {
   import SaveBatchCsvActor._
 
   def receive = {
@@ -84,7 +84,7 @@ object SaveBatchCsvActor {
   }
 
 
-  def writeTags(config:Config):Unit = {
+  def writeTags(config:AppConfig):Unit = {
     implicit object MyFormat extends DefaultCSVFormat {
       override val delimiter = '|'
     }

@@ -2,27 +2,25 @@ package com.qimia.xmlLoader.util
 
 import java.io.{File, FileInputStream}
 
-import play.api.libs.json.{JsObject, Json}
+import com.typesafe.config.ConfigFactory
 import scopt.OParser
 
 /**
   * An instance of this class will be passed around as program arguments.
   */
-case class Config(
+case class AppConfig(
                    inputPath:String="",
                    outputPath:String="",
                    stopWordsPath:String="",
                    numberOfSaveActors:Int=4,
                    numberOfReadActors:Int=2,
                    numberOfOutputFiles:Int=32,
-                   batchSize:Int = 800,
-                   columnSeparator:Char=',',
-                   rowSeparator:Char='\n'
+                   batchSize:Int = 800
                  )
 
 object ArgumentParser{
 
-  def parse(args:Array[String]):Config={
+  def parse(args:Array[String]):AppConfig={
 
     if(new File("app.conf").exists()){
       return parseConfigFile()
@@ -30,16 +28,23 @@ object ArgumentParser{
     parseArguments(args)
   }
 
-  def parseConfigFile()={
-    val stream = new FileInputStream("app.conf")
-    val json = try {  Json.parse(stream) } finally { stream.close() }
-    var args:List[String] = Nil
-    json.asInstanceOf[JsObject].fieldSet.foreach(a=>args=(List("--"+a._1, a._2.toString())++args))
-    parseArguments(args.toArray)
+  def parseConfigFile():AppConfig={
+    val parsed = ConfigFactory.parseFile(new File("app.conf"))
+    var config = AppConfig()
+    parsed.entrySet().forEach(a=>a.getKey match {
+      case "inputPath" => config = config.copy(inputPath = parsed.getString(a.getKey))
+      case "outputPath" => config = config.copy(outputPath = parsed.getString(a.getKey))
+      case "numberOfSaveActors" => config = config.copy(numberOfSaveActors = parsed.getInt(a.getKey))
+      case "numberOfReadActors" => config = config.copy(numberOfReadActors = parsed.getInt(a.getKey))
+      case "numberOfOutputFiles" => config = config.copy(numberOfOutputFiles = parsed.getInt(a.getKey))
+      case "batchSize" => config = config.copy(batchSize = parsed.getInt(a.getKey))
+      case _ => throw new IllegalArgumentException(s"Unexpected argument '${a.getKey}' found in app.conf")
+    })
+    config
   }
 
-  def parseArguments(args:Array[String]):Config= {
-    val builder = OParser.builder[Config]
+  def parseArguments(args:Array[String]):AppConfig= {
+    val builder = OParser.builder[AppConfig]
     import builder._
     def >(x: Int, name: String) = if (x > 0) success else failure(s"Value <$name> must be greater than 0")
 
@@ -90,21 +95,12 @@ object ArgumentParser{
           .validate(>(_, "numRead"))
           .text("The number of read actors"),
 
-        opt[Char]('c', "colsep")
-          .action((x, c) => c.copy(columnSeparator = x))
-          .validate(>(_, "colsep"))
-          .text("The column separator for CSVs."),
-
-        opt[Char]('r', "rowsep")
-          .action((x, r) => r.copy(rowSeparator = x))
-          .text("The row separator for CSVs"),
-
-        help("help").text("Either these parameters can be given or the app.conf can be put into the working directory of the application. template.conf can be used as a template.")
+        help("help").text("Either these parameters should be given or the app.conf can be put into the working directory of the application. template.conf can be used as a template.")
       )
     }
 
     // OParser.parse returns Option[Config]
-    OParser.parse(parser1, args, Config()) match {
+    OParser.parse(parser1, args, AppConfig()) match {
       case Some(config) => config
       case _ => throw new IllegalArgumentException("There is a problem with the parsed arguments.")
     }

@@ -2,7 +2,7 @@ import java.io.File
 
 import com.google.common.base.Charsets
 import com.google.common.hash.{BloomFilter, Funnels}
-import com.qimia.xmlLoader.util.Config
+import com.qimia.xmlLoader.util.AppConfig
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
 class BloomFilterTests extends FunSuite with BeforeAndAfter {
@@ -10,7 +10,7 @@ class BloomFilterTests extends FunSuite with BeforeAndAfter {
   var stopWords: List[String] = _
   var otherWords: List[String] = _
 
-  var config = Config()
+  var config = AppConfig()
 
   before {
     initArguments
