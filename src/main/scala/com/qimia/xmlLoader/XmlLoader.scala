@@ -1,10 +1,11 @@
 package com.qimia.xmlLoader
 
-import java.io.{File, FileNotFoundException}
+import java.io.{File, FileNotFoundException, FileWriter}
+import java.util.Calendar
 
 import akka.actor.{ActorSystem, Props}
 import com.qimia.xmlLoader.actor.{SaveBatchCsvActor, XmlEventReaderActor}
-import com.qimia.xmlLoader.util.{AppConfig, ArgumentParser, FileLoadBalance, StopWordsBloomFilter}
+import com.qimia.xmlLoader.util._
 import akka.routing.RoundRobinPool
 
 import scala.concurrent.Await
@@ -16,23 +17,54 @@ object XmlLoader {
     run(config)
   }
 
-  def run(config:AppConfig)={
+  def run(config:AppConfig):Unit={
 
+    val start = System.currentTimeMillis()
     validateArgs(config)
+    Logger.init(config)
+    try {
 
-    StopWordsBloomFilter.init(config.stopWordsPath)
-    FileLoadBalance.init(config)
+      Logger.appendToLogFile(s"Started at ${Calendar.getInstance().getTime}")
+      Logger.appendToLogFile(s"Input path: ${config.inputPath}")
+      Logger.appendToLogFile(s"Output path: ${config.outputPath}")
+      Logger.appendToLogFile(s"Number of output files: ${config.numberOfOutputFiles}")
+      Logger.appendToLogFile(s"Number of read actors: ${config.numberOfReadActors}")
+      Logger.appendToLogFile(s"Number of write actors: ${config.numberOfSaveActors}")
+      Logger.appendToLogFile(s"Batch size: ${config.batchSize}")
 
-    val system = ActorSystem("MySystem")
-    val readXmlActor = system.actorOf(RoundRobinPool(config.numberOfReadActors).props(Props(new XmlEventReaderActor(config))), name = "readXmlActor")
-    val xmlFileList = recursiveListFiles(new File(config.inputPath))
-      .filter(x => x.isFile && x.getAbsolutePath.endsWith("Posts.xml"))
-      .sorted(Ordering.fromLessThan((file: File, file1: File) => file.length()<file1.length()))
-      .map(_.getAbsolutePath)
-      .zipWithIndex
-    xmlFileList.foreach(readXmlActor ! _)
-    Await.ready(system.whenTerminated, Duration.Inf)
-    SaveBatchCsvActor.writeTags(config)
+      StopWordsBloomFilter.init(config.stopWordsPath)
+      FileLoadBalance.init(config)
+
+      val system = ActorSystem("MySystem")
+      val readXmlActor = system.actorOf(RoundRobinPool(config.numberOfReadActors).props(Props(new XmlEventReaderActor(config))), name = "readXmlActor")
+      val xmlFileList = recursiveListFiles(new File(config.inputPath))
+        .filter(x => x.isFile && x.getAbsolutePath.endsWith("Posts.xml"))
+        .sorted(Ordering.fromLessThan((file: File, file1: File) => file.length() < file1.length()))
+        .map(_.getAbsolutePath)
+        .zipWithIndex
+      Logger.appendToLogFile("")
+      Logger.appendToLogFile("XML files to parse")
+
+      xmlFileList.foreach(x => s"${Logger.appendToLogFile(x._1)}")
+      xmlFileList.foreach(readXmlActor ! _)
+
+      Await.ready(system.whenTerminated, Duration.Inf)
+      SaveBatchCsvActor.writeTags(config)
+
+      Logger.appendToLogFile("")
+      Logger.appendToLogFile(s"Successfuly finished at ${Calendar.getInstance().getTime}")
+
+    } catch {
+      case e =>
+        Logger.appendToLogFile(s"FAILURE TO COMPLETE. ")
+        Logger.appendToLogFile("Reason:")
+        Logger.appendToLogFile(e.toString)
+
+    } finally {
+      Logger.appendToLogFile(s"Total ${(System.currentTimeMillis()-start)/1000} seconds.")
+      Logger.close()
+    }
+
   }
 
 
