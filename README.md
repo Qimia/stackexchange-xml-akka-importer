@@ -24,6 +24,30 @@ An example template can be found in 'template_app.conf'.
 
 ## Functioning
 
+### File preparation 
+ * Create a directory "INPUT_DIR" somewhere, name doesn't matter
+ * Download the StackExchange data and extract each .7z file into "INPUT_DIR"
+ * Cre
+ * The directory should look like this
+ 
+ * INPUT_DIR
+   * android.stackexchange.com
+     * Posts.xml
+     * .
+     * .
+     * .
+   * astronomy.stackexchange.com
+     * Posts.xml
+     * .
+     * .
+     * .
+   * .
+   * .
+   * .
+   
+ * OUTPUT_DIR   
+    
+
 ### Steps
  * Read XML File using event reader model within `AKKA` actor
  * Un-marshal data into Post model

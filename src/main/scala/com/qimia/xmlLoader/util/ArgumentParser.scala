@@ -54,18 +54,11 @@ object ArgumentParser{
         head("StackExchange-XML-Importer", "0.1"),
         opt[String]('i', "input")
           .required()
-          .validate(x=> if (new File(x).exists()) success else failure("The input directory does not exist"))
           .action((x, c) => c.copy(inputPath = x))
           .text("The input directory containing the XML files. All XML files in this directory will be parsed."),
         opt[String]('o', "output")
           .required()
           .action((x, c) => {
-            val fl = new File(x)
-            if (!fl.exists) {
-              fl.mkdirs()
-              println("The output directory was created.")
-            }
-            fl.listFiles().foreach(_.delete())
             c.copy(outputPath = x)}
           )
           .text("The output directory to save CSVs in. If it does not exist, the program will attempt to create it. If exists, all the files in it will be deleted."),
