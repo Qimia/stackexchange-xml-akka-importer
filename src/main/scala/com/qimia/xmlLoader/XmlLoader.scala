@@ -7,6 +7,7 @@ import akka.actor.{ActorSystem, Props}
 import com.qimia.xmlLoader.actor.{SaveBatchCsvActor, XmlEventReaderActor}
 import com.qimia.xmlLoader.util._
 import akka.routing.RoundRobinPool
+import com.qimia.xmlLoader.actor.XmlEventReaderActor.saveActorName
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
@@ -36,7 +37,9 @@ object XmlLoader {
       FileLoadBalance.init(config)
 
       val system = ActorSystem("MySystem")
-      val readXmlActor = system.actorOf(RoundRobinPool(config.numberOfReadActors).props(Props(new XmlEventReaderActor(config))), name = "readXmlActor")
+      val saveBatchCsvActor = system.actorOf(RoundRobinPool(config.numberOfSaveActors).props(Props(new SaveBatchCsvActor(config))), name = saveActorName)
+      val readXmlActor = system.actorOf(RoundRobinPool(config.numberOfReadActors).props(Props(new XmlEventReaderActor(config, saveBatchCsvActor))), name = "readXmlActor")
+
       val xmlFileList = recursiveListFiles(new File(config.inputPath))
         .filter(x => x.isFile && x.getAbsolutePath.endsWith("Posts.xml"))
         .sorted(Ordering.fromLessThan((file: File, file1: File) => file.length() < file1.length()))

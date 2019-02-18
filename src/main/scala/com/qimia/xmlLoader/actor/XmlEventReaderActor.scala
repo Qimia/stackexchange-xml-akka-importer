@@ -13,9 +13,7 @@ import org.jsoup.Jsoup
 import scala.io.Source
 import scala.xml.pull._
 
-class XmlEventReaderActor(config: AppConfig) extends Actor with ActorLogging {
-
-  val saveBatchCsvActor = context.actorOf(RoundRobinPool(config.numberOfSaveActors).props(Props(new SaveBatchCsvActor(config))), name = saveActorName)
+class XmlEventReaderActor(config: AppConfig, saveBatchCsvActor: ActorRef) extends Actor with ActorLogging {
 
   def receive = {
     case (fileName: String, fileIndex: Int) => {
