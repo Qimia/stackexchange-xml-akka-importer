@@ -17,3 +17,7 @@ target/
 
 # test run
 output/
+
+# configuration
+app.conf
+stackexchange-xml-csv-akka-assembly-1.0.jar

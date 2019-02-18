@@ -40,6 +40,15 @@ object ArgumentParser{
       case "batchSize" => config = config.copy(batchSize = parsed.getInt(a.getKey))
       case _ => throw new IllegalArgumentException(s"Unexpected argument '${a.getKey}' found in app.conf")
     })
+
+    if (!(new File(config.inputPath)).isDirectory) {
+      System.err.println("Input path is not a directory")
+      System.exit(2)
+    }
+    else if (!(new File(config.outputPath)).isDirectory) {
+      System.err.println("Output path is not a directory")
+      System.exit(3)
+    }
     config
   }
 
