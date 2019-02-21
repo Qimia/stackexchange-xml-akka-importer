@@ -19,21 +19,12 @@ class SaveBatchCsvActor(config:AppConfig) extends Actor with ActorLogging {
 
       val fileIndex = FileLoadBalance.nextOutputFileIndex
       val bodyTitleWriter = CSVWriter.open(s"${config.outputPath}/postText$fileIndex.csv", true)
-      val tagRelationWriter = CSVWriter.open(s"${config.outputPath}/postTags$fileIndex.csv", true)
+      val tagsWriter = CSVWriter.open(s"${config.outputPath}/postTags$fileIndex.csv", true)
 
       for (post : Post <- postsBatchMsg.posts) {
         normalize(post)
         val tagsOfPost = post.tags.split(",")
 
-        /**
-          * Create the necessary tags
-          * If the tag is not seen before, it is created with the next ID, incremental from 1
-          */        tagsOfPost.foreach(
-          tag => {
-            val tagID:Int = tagIdPairs getOrElse (tag, tagIdPairs.size)
-            tagIdPairs(tag) = tagID
-          }
-        )
 
         /**
           * Write the title and body information to CSV
@@ -44,10 +35,10 @@ class SaveBatchCsvActor(config:AppConfig) extends Actor with ActorLogging {
 
         val newRowID = getRowID
         bodyTitleWriter.writeRow(List(newRowID, post.title, post.body, post.forumDomain))
-        tagRelationWriter.writeRow(List(newRowID, tagsOfPost.map(tagIdPairs(_)).mkString(","), post.forumDomain))
+        tagsWriter.writeRow(List(newRowID, tagsOfPost.mkString(","), post.forumDomain))
       }
       bodyTitleWriter.close()
-      tagRelationWriter.close()
+      tagsWriter.close()
       writtenRows += postsBatchMsg.posts.size
       writtenBatches += 1
       log.info(s"${self.hashCode()} written ${postsBatchMsg.posts.size} in batch, $writtenRows in total rows, in the batch $writtenBatches ")
@@ -60,10 +51,6 @@ class SaveBatchCsvActor(config:AppConfig) extends Actor with ActorLogging {
 
 object SaveBatchCsvActor {
 
-  /**
-    * We must use thread safe map and variables as these are global objects modified by multiple threads.
-    */
-  val tagIdPairs: scala.collection.concurrent.Map[String,Int] = scala.collection.concurrent.TrieMap[String,Int]()
   @volatile var writtenRows:Int=0
   @volatile var writtenBatches:Int=0
   @volatile private var rowID:Long = -1
@@ -83,14 +70,4 @@ object SaveBatchCsvActor {
     post.tags = post.tags.toLowerCase().replaceAll("><",",").replaceAll("[<>]","")
   }
 
-
-  def writeTags(config:AppConfig):Unit = {
-    implicit object MyFormat extends DefaultCSVFormat {
-      override val delimiter = '|'
-    }
-    val writer = CSVWriter.open(s"${config.outputPath}/tagIDs.csv", true)
-    tagIdPairs.foreach(x=>writer.writeRow(List(x._2, x._1)))
-    writer.flush()
-    writer.close()
-  }
 }

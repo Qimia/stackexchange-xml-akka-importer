@@ -52,7 +52,6 @@ object XmlLoader {
       xmlFileList.foreach(readXmlActor ! _)
 
       Await.ready(system.whenTerminated, Duration.Inf)
-      SaveBatchCsvActor.writeTags(config)
 
       Logger.appendToLogFile("")
       Logger.appendToLogFile(s"Successfuly finished at ${Calendar.getInstance().getTime}")
