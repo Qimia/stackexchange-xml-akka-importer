@@ -21,3 +21,5 @@ libraryDependencies += "org.jsoup" % "jsoup" % "1.8.3"
 libraryDependencies += "com.typesafe" % "config" % "1.3.0"
 
 
+// https://mvnrepository.com/artifact/commons-io/commons-io
+libraryDependencies += "commons-io" % "commons-io" % "2.6"

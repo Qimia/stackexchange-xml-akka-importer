@@ -1,7 +1,8 @@
 package com.qimia.xmlLoader.actor
 
-import java.io.File
+import java.io.{File, FileInputStream}
 
+import org.apache.commons.io.input.BOMInputStream
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.routing.RoundRobinPool
 import com.qimia.xmlLoader.model.{Post, PostsBatchMsg}
@@ -10,7 +11,7 @@ import XmlEventReaderActor._
 import org.apache.commons.text.StringEscapeUtils
 import org.jsoup.Jsoup
 
-import scala.io.Source
+import scala.io.{Codec, Source}
 import scala.xml.pull._
 
 class XmlEventReaderActor(config: AppConfig, saveBatchCsvActor: ActorRef) extends Actor with ActorLogging {
@@ -18,9 +19,13 @@ class XmlEventReaderActor(config: AppConfig, saveBatchCsvActor: ActorRef) extend
   def receive = {
     case (fileName: String, fileIndex: Int) => {
       val dirName = new File(fileName).getParentFile.getName
-      val xmlBuffer = Source.fromFile(fileName)
-      xmlBuffer.next()
-      val xml = new XMLEventReader(xmlBuffer)
+      val inputStrem = new BOMInputStream(new FileInputStream(fileName))
+      if (inputStrem.hasBOM)
+        println("This guy is using bom input stream")
+      else
+        println("No dom found")
+
+      val xml = new XMLEventReader(Source.fromInputStream(inputStrem)(Codec.UTF8))
       var postsBatchMsg = new PostsBatchMsg
       while (xml.hasNext) {
         val next = xml.next()
