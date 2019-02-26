@@ -20,10 +20,6 @@ class XmlEventReaderActor(config: AppConfig, saveBatchCsvActor: ActorRef) extend
     case (fileName: String, fileIndex: Int) => {
       val dirName = new File(fileName).getParentFile.getName
       val inputStrem = new BOMInputStream(new FileInputStream(fileName))
-      if (inputStrem.hasBOM)
-        println("This guy is using bom input stream")
-      else
-        println("No dom found")
 
       val xml = new XMLEventReader(Source.fromInputStream(inputStrem)(Codec.UTF8))
       var postsBatchMsg = new PostsBatchMsg
