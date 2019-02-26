@@ -100,5 +100,4 @@ object XmlLoader {
     }
     outDir.listFiles().foreach(_.delete())
   }
-
 }

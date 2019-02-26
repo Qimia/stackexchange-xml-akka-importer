@@ -23,3 +23,12 @@ libraryDependencies += "com.typesafe" % "config" % "1.3.0"
 
 // https://mvnrepository.com/artifact/commons-io/commons-io
 libraryDependencies += "commons-io" % "commons-io" % "2.6"
+// https://mvnrepository.com/artifact/com.google.guava/guava
+
+// https://mvnrepository.com/artifact/com.google.guava/guava
+libraryDependencies += "com.google.guava" % "guava" % "14.0.1"
+
+
+
+
+

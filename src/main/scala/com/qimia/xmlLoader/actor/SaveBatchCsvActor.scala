@@ -1,14 +1,24 @@
 package com.qimia.xmlLoader.actor
 
+import java.nio.charset.Charset
+
 import akka.actor.{Actor, ActorLogging}
 import com.github.tototoshi.csv.{CSVWriter, DefaultCSVFormat}
 import com.qimia.xmlLoader.model.{Post, PostsBatchMsg}
 import com.qimia.xmlLoader.util.{AppConfig, FileLoadBalance, StopWordsBloomFilter}
+import com.google.common.hash.Hashing
+
 
 case class PostsBatch(posts: PostsBatchMsg)
 case class DoneMsg()
 
+
 class SaveBatchCsvActor(config:AppConfig) extends Actor with ActorLogging {
+
+  val tokenHashFunction = Hashing.murmur3_128(0)
+
+  def hash(token:String) = tokenHashFunction.hashString(token, Charset.defaultCharset()).asLong()
+
   import SaveBatchCsvActor._
 
   def receive = {
@@ -17,9 +27,7 @@ class SaveBatchCsvActor(config:AppConfig) extends Actor with ActorLogging {
         override val delimiter = '|'
       }
 
-      val fileIndex = FileLoadBalance.nextOutputFileIndex
-      val bodyTitleWriter = CSVWriter.open(s"${config.outputPath}/postText$fileIndex.csv", true)
-      val tagsWriter = CSVWriter.open(s"${config.outputPath}/postTags$fileIndex.csv", true)
+      val (bodyTitleWriter, tagsWriter) = FileLoadBalance.nextOutputFileIndex
 
       for (post : Post <- postsBatchMsg.posts) {
         normalize(post)
@@ -33,7 +41,7 @@ class SaveBatchCsvActor(config:AppConfig) extends Actor with ActorLogging {
           * second file contains the same row ID and list of IDs of the tags
           */
 
-        val newRowID = getRowID
+        val newRowID = hash(post.id+post.forumDomain)
         bodyTitleWriter.writeRow(List(newRowID, post.title, post.body, post.forumDomain))
         tagsWriter.writeRow(List(newRowID, tagsOfPost.mkString(","), post.forumDomain))
       }
@@ -53,12 +61,6 @@ object SaveBatchCsvActor {
 
   @volatile var writtenRows:Int=0
   @volatile var writtenBatches:Int=0
-  @volatile private var rowID:Long = -1
-
-  def getRowID=synchronized{
-    rowID+=1
-    rowID
-  }
 
   /**
     * A lot of the normalizations are removed. They are done in the Spark code of Overflow-processor.
