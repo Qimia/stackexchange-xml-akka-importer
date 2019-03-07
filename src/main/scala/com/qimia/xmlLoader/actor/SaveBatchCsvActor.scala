@@ -17,15 +17,12 @@ class SaveBatchCsvActor(config:AppConfig) extends Actor with ActorLogging {
 
   val tokenHashFunction = Hashing.murmur3_128(0)
 
-  def hash(token:String) = tokenHashFunction.hashString(token, Charset.defaultCharset()).asLong()
+  def hash(token:String) = tokenHashFunction.hashString(token, Charset.defaultCharset()).asLong().abs
 
   import SaveBatchCsvActor._
 
   def receive = {
     case PostsBatch(postsBatchMsg) => {
-      implicit object MyFormat extends DefaultCSVFormat {
-        override val delimiter = '|'
-      }
 
       val (bodyTitleWriter, tagsWriter) = FileLoadBalance.nextOutputFileIndex
 

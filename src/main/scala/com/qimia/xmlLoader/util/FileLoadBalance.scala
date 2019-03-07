@@ -2,7 +2,7 @@ package com.qimia.xmlLoader.util
 
 import java.io.File
 
-import com.github.tototoshi.csv.CSVWriter
+import com.github.tototoshi.csv.{CSVWriter, DefaultCSVFormat}
 
 /**
   * Returns the files in a circular manner
@@ -15,6 +15,9 @@ object FileLoadBalance {
 
   def init(config: AppConfig) = {
     this.config = config
+    implicit object MyFormat extends DefaultCSVFormat {
+      override val delimiter = '|'
+    }
     circular = Iterator.continually((0 until config.numberOfOutputFiles).map(x=>
       (
         CSVWriter.open(s"${config.outputPath}/postText$x.csv", true),

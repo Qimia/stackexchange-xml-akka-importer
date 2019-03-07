@@ -56,6 +56,7 @@ class ActorSystemTests extends TestKit(ActorSystem("MySpec")) with ImplicitSende
 
   "Save Actor Test" must {
     "create output file" in {
+      FileLoadBalance.init(config)
       val actorRef = TestActorRef(Props(new SaveBatchCsvActor(config)))
 
       actorRef ! PostsBatch(posts)
