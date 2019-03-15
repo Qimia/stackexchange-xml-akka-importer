@@ -26,5 +26,13 @@ object FileLoadBalance {
     ).flatten
   }
 
+  def closeAll={
+    for(i <- 0 until config.numberOfOutputFiles+1){
+      val (fl1, fl2) = nextOutputFileIndex
+      fl1.close()
+      fl2.close()
+    }
+  }
+
   def nextOutputFileIndex: (CSVWriter, CSVWriter) = circular.next
 }

@@ -53,6 +53,7 @@ object XmlLoader {
 
       Await.ready(system.whenTerminated, Duration.Inf)
 
+
       Logger.appendToLogFile("")
       Logger.appendToLogFile(s"Successfuly finished at ${Calendar.getInstance().getTime}")
 
@@ -63,6 +64,7 @@ object XmlLoader {
         Logger.appendToLogFile(e.toString)
 
     } finally {
+      FileLoadBalance.closeAll
       Logger.appendToLogFile(s"Total ${(System.currentTimeMillis()-start)/1000} seconds.")
       Logger.close()
     }

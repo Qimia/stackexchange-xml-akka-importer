@@ -42,8 +42,6 @@ class SaveBatchCsvActor(config:AppConfig) extends Actor with ActorLogging {
         bodyTitleWriter.writeRow(List(newRowID, post.title, post.body, post.forumDomain))
         tagsWriter.writeRow(List(newRowID, tagsOfPost.mkString(","), post.forumDomain))
       }
-      bodyTitleWriter.close()
-      tagsWriter.close()
       writtenRows += postsBatchMsg.posts.size
       writtenBatches += 1
       log.info(s"${self.hashCode()} written ${postsBatchMsg.posts.size} in batch, $writtenRows in total rows, in the batch $writtenBatches ")
